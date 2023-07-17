@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.db.models import Q
 
 # from django.http import HttpResponse
 # Create your views here.
@@ -18,9 +19,15 @@ def home(request):
         query = request.GET.get("q")
     else:
         query = ""
-    rooms = Room.objects.filter(topic__name__icontains=query)# icontains means it is not case sensitive, just contains means it is case sensitive
+    rooms = Room.objects.filter(
+        Q(topic__name__icontains=query)
+        | Q(name__icontains=query)
+        | Q(description__icontains=query)
+    )
+    # icontains means it is not case sensitive, just contains means it is case sensitive
+    room_count= rooms.count()
     topics = Topic.objects.all()
-    context = {"rooms": rooms, "topics": topics}
+    context = {"rooms": rooms, "topics": topics, 'room_count':room_count}
     return render(
         request, "base/home.html", context
     )  # render generates html files not strings
